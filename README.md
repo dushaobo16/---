@@ -67,6 +67,7 @@ def rle_decode(mask_rle, shape=(512, 512)):
 ![](https://upload-images.jianshu.io/upload_images/15074510-c6806cfdf2a88fc4.png?imageMogr2/auto-orient/strip|imageView2/2/w/999/format/webp)
 ![](https://upload-images.jianshu.io/upload_images/15074510-faee46ef496b76bf.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
 
-   
+ 具体baseline代码以参考文件为例，后期进行改进。  
 参考文献
 https://www.iteye.com/blog/zhaohongda33-1137937
+https://www.jianshu.com/p/085f4c8256f1
