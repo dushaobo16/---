@@ -61,7 +61,11 @@ def rle_decode(mask_rle, shape=(512, 512)):
         img[lo:hi] = 1
     return img.reshape(shape, order='F')
 ```
-
+#使用模型fcn_resnet50
+关于resnet，网上有大量的文章讲解其原理和思路，简单来说，resnet巧妙地利用了shortcut连接，解决了深度网络中模型退化的问题。
+#论文中的结构如下
+![](https://upload-images.jianshu.io/upload_images/15074510-c6806cfdf2a88fc4.png?imageMogr2/auto-orient/strip|imageView2/2/w/999/format/webp)
+![](https://upload-images.jianshu.io/upload_images/15074510-faee46ef496b76bf.jpg?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
 
    
 参考文献
