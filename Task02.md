@@ -46,9 +46,18 @@ plt.imshow(img)
 
    >* 扩增后的标签保持不变
 
+* 2.4 数据扩增的方法
+
+数据扩增方法有很多：从颜色空间、尺度空间到样本空间，同时根据不同任务数据扩增都有相应的区别。
+
+对于图像分类，数据扩增一般不会改变标签；对于物体检测，数据扩增会改变物体坐标位置；对于图像分割，数据扩增会改变像素标签。
+
+以torchvision.transforms为例，首先整体了解数据扩增的方法，包括：
 
 
 
 # 参考文献
 
 https://zhuanlan.zhihu.com/p/143946401
+https://zhuanlan.zhihu.com/p/71140833
+https://blog.csdn.net/chenran187906/article/details/106836622/
