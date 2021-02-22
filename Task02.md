@@ -109,6 +109,68 @@ transforms.RandomApply(transforms, p=0.5): 给一个transform加上概率，依�
 
 transforms.RandomOrder: 将transforms中的操作随机打乱。
 
+演示示例
+```
+from PIL import Image
+from torchvision import transforms
+img = Image.open(r'D:\opencv_data\aloeL.jpg')
+#随机比例缩放
+new_img = transforms.Resize((200,300))(img)
+print(f'{img.size}---->{new_img.size}')
+new_img.save('./1.jpg')
+```
+
+(1282, 1110)---->(300, 200)
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/1.jpg?raw=true)
+```
+#随机位置裁剪
+new_img = transforms.RandomCrop(500)(img)
+new_img.save('./2_1.jpg')
+new_img = transforms.CenterCrop(600)(img)
+new_img.save('./2_2.jpg')
+```
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_1.jpg?raw=true)
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_2.jpg?raw=true)
+```
+#随机水平/垂直翻转
+new_img = transforms.RandomHorizontalFlip(p=1)(img)  #p表示图像翻转的概率,default p=0.5
+new_img.save('./3_1.jpg')
+new_img = transforms.RandomVerticalFlip(p=1)(img)
+new_img.save('./3_2.jpg')
+```
+
+```
+#随机角度旋转
+new_img  = transforms.RandomRotation(45)(img) #表示 45度旋转
+new_img.save('./4.jpg')
+```
+
+```
+#色度、亮度、饱和度、对比度的变化
+new_img = transforms.ColorJitter(brightness=1)(img)
+# new_img = transforms.ColorJitter(contrast=1)(img)
+# new_img = transforms.ColorJitter(saturation=0.5)(img)
+# new_img = transforms.ColorJitter(hue=0.5)(img)
+new_img.save('./5_1.jpg')
+```
+
+```
+#进行随机的灰度化
+new_img = transforms.RandomGrayscale(p=0.5)(img)
+new_img.save('./6.jpg')
+```
+
+```
+data_transform={'train':transforms.Compose([
+                    transforms.RandomHorizontalFlip(),
+                    transforms.Resize(image_size),
+                    transforms.CenterCrop(image_size),
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                    ]),
+                    }
+```
+
 
 # 参考文献
 
