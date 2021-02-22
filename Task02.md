@@ -27,6 +27,7 @@ plt.imshow(img)
 >注意：通过OpenCV读入的图像数据是以BGR的形式读入，如果需要显示，则需要转换为RGB制式。
 
 应用效果：
+
 <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/QQ%E6%88%AA%E5%9B%BE20210222204048.png?raw=true" width="200" height="200"/><br/>
 
 # 2 数据扩增
@@ -121,6 +122,7 @@ new_img.save('./1.jpg')
 ```
 
 (1282, 1110)---->(300, 200)
+
 ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/1.jpg?raw=true)
 ```
 #随机位置裁剪
