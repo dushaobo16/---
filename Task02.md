@@ -142,12 +142,18 @@ new_img = transforms.RandomVerticalFlip(p=1)(img)
 new_img.save('./3_2.jpg')
 ```
 
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/3_1.jpg?raw=true" width="200"/><img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/3_2.jpg?raw=true" width="200"/>
+</center>
 ```
 #随机角度旋转
 new_img  = transforms.RandomRotation(45)(img) #表示 45度旋转
 new_img.save('./4.jpg')
 ```
 
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/4.jpg?raw=true" width="200"/>
+</center>
 ```
 #色度、亮度、饱和度、对比度的变化
 new_img = transforms.ColorJitter(brightness=1)(img)
@@ -157,12 +163,17 @@ new_img = transforms.ColorJitter(brightness=1)(img)
 new_img.save('./5_1.jpg')
 ```
 
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/5_1.jpg?raw=true" width="200"/>
+</center>
 ```
 #进行随机的灰度化
 new_img = transforms.RandomGrayscale(p=0.5)(img)
 new_img.save('./6.jpg')
 ```
-
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/6.jpg?raw=true" width="200"/>
+</center>
 ```
 data_transform={'train':transforms.Compose([
                     transforms.RandomHorizontalFlip(),
