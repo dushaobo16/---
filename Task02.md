@@ -115,3 +115,4 @@ transforms.RandomOrder: 将transforms中的操作随机打乱。
 https://zhuanlan.zhihu.com/p/143946401
 https://zhuanlan.zhihu.com/p/71140833
 https://blog.csdn.net/chenran187906/article/details/106836622/
+https://github.com/pytorch/vision
