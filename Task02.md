@@ -129,8 +129,8 @@ new_img.save('./2_1.jpg')
 new_img = transforms.CenterCrop(600)(img)
 new_img.save('./2_2.jpg')
 ```
-![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_1.jpg?raw=true)
-![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_2.jpg?raw=true)
+
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_1.jpg?raw=true) ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/2_2.jpg?raw=true)
 ```
 #随机水平/垂直翻转
 new_img = transforms.RandomHorizontalFlip(p=1)(img)  #p表示图像翻转的概率,default p=0.5
