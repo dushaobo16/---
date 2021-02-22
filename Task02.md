@@ -53,7 +53,61 @@ plt.imshow(img)
 对于图像分类，数据扩增一般不会改变标签；对于物体检测，数据扩增会改变物体坐标位置；对于图像分割，数据扩增会改变像素标签。
 
 以torchvision.transforms为例，首先整体了解数据扩增的方法，包括：
+#2.4.1  裁剪
 
+中心裁剪：transforms.CenterCrop；
+
+随机裁剪：transforms.RandomCrop；
+
+随机长宽比裁剪：transforms.RandomResizedCrop；
+
+上下左右中心裁剪：transforms.FiveCrop；
+
+上下左右中心裁剪后翻转: transforms.TenCrop。
+
+#2.4.2  翻转和旋转
+
+依概率p水平翻转：transforms.RandomHorizontalFlip(p=0.5)；
+
+依概率p垂直翻转：transforms.RandomVerticalFlip(p=0.5)；
+
+随机旋转：transforms.RandomRotation。
+
+#2.4.3  随机遮挡
+
+对图像进行随机遮挡: transforms.RandomErasing。
+
+#2.4.4  图像变换
+
+尺寸变换：transforms.Resize；
+
+标准化：transforms.Normalize；
+
+填充：transforms.Pad；
+
+修改亮度、对比度和饱和度：transforms.ColorJitter；
+
+转灰度图：transforms.Grayscale；
+
+依概率p转为灰度图：transforms.RandomGrayscale；
+
+线性变换：transforms.LinearTransformation()；
+
+仿射变换：transforms.RandomAffine；
+
+将数据转换为PILImage：transforms.ToPILImage；
+
+转为tensor，并归一化至[0-1]：transforms.ToTensor；
+
+用户自定义方法：transforms.Lambda。
+
+#2.4.5  对transforms操作，使数据增强更灵活
+
+transforms.RandomChoice(transforms): 从给定的一系列transforms中选一个进行操作；
+
+transforms.RandomApply(transforms, p=0.5): 给一个transform加上概率，依概率进行操作；
+
+transforms.RandomOrder: 将transforms中的操作随机打乱。
 
 
 # 参考文献
