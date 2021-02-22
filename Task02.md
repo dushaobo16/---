@@ -16,16 +16,17 @@ im = Image.open(r'D:\opencv_data\aloeL.jpg')
 <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/QQ%E6%88%AA%E5%9B%BE20210222202509.png?raw=true" width="200" height="200"/><br/>
 * 2.1 OpenCV
 > OpenCV是一个跨平台的计算机视觉库，最早由Intel开源得来。OpenCV发展的非常早，拥有众多的计算机视觉、数字图像处理和机器视觉等功能。OpenCV在功能上比Pillow更加强大很多，学习成本也高很多。
+
 ```
 import cv2
 import matplotlib.pyplot as plt
 img = cv2.imread(r'D:\opencv_data\aloeL.jpg')
-img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)   
 plt.imshow(img)
 ```
-显示效果：
-
-
+>注意：通过OpenCV读入的图像数据是以BGR的形式读入，如果需要显示，则需要转换为RGB制式。
+应用效果：
+<img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/QQ%E6%88%AA%E5%9B%BE20210222204048.png?raw=true" width="200" height="200"/><br/>
 
 
 #参考文献
