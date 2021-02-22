@@ -189,10 +189,15 @@ data_transform={'train':transforms.Compose([
                     }
 ```
 
+# Albumentations
+
 
 # 参考文献
 
 https://zhuanlan.zhihu.com/p/143946401
 https://zhuanlan.zhihu.com/p/71140833
 https://blog.csdn.net/chenran187906/article/details/106836622/
+
 https://github.com/pytorch/vision
+
+https://albumentations.readthedocs.io/en/latest/
