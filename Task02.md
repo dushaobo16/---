@@ -211,6 +211,96 @@ visualize(image)
 
 原图显示效果：
 
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/Abum%E5%8E%9F%E5%9B%BE.png?raw=true" width="200"/>
+</center>
+
+```
+#水平翻转
+transform = A.HorizontalFlip(p=0.5)
+random.seed(7)
+augmented_image = transform(image=image)['image']
+visualize(augmented_image)
+```
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/A2.png?raw=true" width="200"/>
+</center>
+
+```
+#旋转平移缩放
+transform = A.ShiftScaleRotate(p=0.5)
+random.seed(7) 
+augmented_image = transform(image=image)['image']
+visualize(augmented_image)
+```
+
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/a3.png?raw=true" width="200"/>
+</center>
+
+```
+
+transform = A.Compose([
+    A.CLAHE(),  #自适应直方图均衡化
+    A.RandomRotate90(),#随机90度旋转
+    A.Transpose(),
+    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.50, rotate_limit=45, p=.75),
+    #旋转平移绽放
+    A.Blur(blur_limit=3), #模糊
+    A.OpticalDistortion(),#光学变形
+    A.GridDistortion(),#栅格变形
+    A.HueSaturationValue(),#HSV偏移
+])
+random.seed(42) 
+augmented_image = transform(image=image)['image']
+visualize(augmented_image)
+```
+
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/a4.png?raw=true" width="200"/>
+</center>
+
+```
+transform = A.Compose([
+        A.RandomRotate90(),
+        A.Flip(),
+        A.Transpose(),
+        A.OneOf([
+            A.IAAAdditiveGaussianNoise(),
+            A.GaussNoise(),
+        ], p=0.2),
+        A.OneOf([  #随机选取共中一个
+            A.MotionBlur(p=.2),
+            A.MedianBlur(blur_limit=3, p=0.1),
+            A.Blur(blur_limit=3, p=0.1),
+        ], p=0.2),
+        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=45, p=0.2),
+        A.OneOf([
+            A.OpticalDistortion(p=0.3),
+            A.GridDistortion(p=.1),
+            A.IAAPiecewiseAffine(p=0.3),
+        ], p=0.2),
+        A.OneOf([
+            A.CLAHE(clip_limit=2),
+            A.IAASharpen(),
+            A.IAAEmboss(),
+            A.RandomBrightnessContrast(),            
+        ], p=0.3),
+        A.HueSaturationValue(p=0.3),
+    ])
+random.seed(42) 
+augmented_image = transform(image=image)['image']
+visualize(augmented_image)
+```
+
+
+<center class="half">
+    <img src="https://github.com/dushaobo16/city-map-segment/blob/main/image/a5.png?raw=true" width="200"/>
+</center>
+
+
+
+
 
 
 # 参考文献
