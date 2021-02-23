@@ -193,6 +193,25 @@ data_transform={'train':transforms.Compose([
 
 # Albumentations
 
+Albumentations是常用的第三方数据扩增库，提供了多样的数据扩增方法，对图像分类、语义分割、物体检测和关键点检测都支持，速度较快。
+根据Albumentations官方文档提供的示例做解释说明：
+```
+import random
+import cv2
+from matplotlib import pyplot as plt
+import albumentations as A
+def visualize(image):
+    plt.figure(figsize=(10, 10))
+    plt.axis('off')
+    plt.imshow(image)
+image = cv2.imread(r'D:\opencv_data\aloeL.jpg')
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+visualize(image)
+```
+
+原图显示效果：
+
+
 
 # 参考文献
 
