@@ -81,7 +81,37 @@ unsamplingd的操作可以看成是反卷积（Deconvolutional）,卷积运算�
 ![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/fcn.PNG)
 图中，image是原图像，conv1,conv2..,conv5为卷积操作，pool1,pool2,..pool5为pool操作（pool就是使得图片变为原图的1/2），注意con6-7是最后的卷积层，最右边一列是upsample后的end to end结果。必须说明的是图中nx是指对应的特征图上采样n倍（即变大n倍），并不是指有n个特征图，如32x upsampled 中的32x是图像只变大32倍，不是有32个上采样图像，又如2x conv7是指conv7的特征图变大2倍。
 
+## 3.5 SegNet
 
+Segnet是用于进行像素级别图像分割的全卷积网络，分割的核心组件是一个encoder 网络，及其相对应的decoder网络，后接一个象素级别的分类网络。
+
+encoder网络：其结构与VGG16网络的前13层卷积层的结构相似。decoder网络：作用是将由encoder的到的低分辨率的feature maps 进行映射得到与输入图像featuremap相同的分辨率进而进行像素级别的分类。
+
+Segnet的亮点：decoder进行上采样的方式，直接利用与之对应的encoder阶段中进行max-pooling时的polling index 进行非线性上采样，这样做的好处是上采样阶段就不需要进行学习。 上采样后得到的feature maps 是非常稀疏的，因此，需要进一步选择合适的卷积核进行卷积得到dense featuremaps 。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/segnet.jpeg)
+
+SegNet的思路和FCN十分相似，只是Encoder，Decoder（Unsampling）使用的技术不一样。SegNet的编码器部分使用的是VGG16的前13层卷积网络，每个编码器层都对应一个解码器层，最终解码器的输出被送入soft-max分类器以独立的为每个像素产生类别概率。
+
+左边是卷积提取特征，通过pooling增大感受野，同时图片变小，该过程称为Encoder，右边是反卷积（在这里反卷积与卷积没有区别）与unsampling，通过反卷积使得图像分类后特征得以重现，upsampling还原到原图想尺寸，该过程称为Decoder，最后通过Softmax，输出不同分类的最大值，得到最终分割图。
+
+### Encoder编码器
+
+* 在编码器处，执行卷积和最大池化。
+* VGG-16有13个卷积层。 （不用全连接的层）
+* 在进行2×2最大池化时，存储相应的最大池化索引（位置）。
+
+### Decoder解码器
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/segnet-decoder.png)
+
+使用最大池化的索引进行上采样
+
+* 在解码器处，执行上采样和卷积。最后，每个像素送到softmax分类器。
+* 在上采样期间，如上所示，调用相应编码器层处的最大池化索引以进行上采样。
+* 最后，使用K类softmax分类器来预测每个像素的类别。
+
+### 3.6 Unet
 
 
 # 参考文献
