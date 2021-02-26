@@ -35,7 +35,7 @@ Fully Conv简称FCN为全连接网络，将将一幅RGB图像输入到卷积神�
 
 主要特点：
 
-* 不含全连接层（FC）的全卷积（Fully Conv）网络。从而可适应任意尺寸输入。*
+* 不含全连接层（FC）的全卷积（Fully Conv）网络。从而可适应任意尺寸输入。
 
 * 引入增大数据尺寸的反卷积（Deconv）层。能够输出精细的结果。
 
@@ -43,5 +43,48 @@ Fully Conv简称FCN为全连接网络，将将一幅RGB图像输入到卷积神�
 
 ![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/fcn.jpg)
 
+网络结构详解图：输入可为任意尺寸图像彩色图像；输出与输入尺寸相同，深度为20类目标+背景=21，这里的类别与数据集类别保持一致。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/fcn%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84%E8%AF%A6%E8%A7%A3%E5%9B%BE.png)
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/fcn%E8%8E%B7%E5%BE%97%E5%9B%BE%E5%83%8F%E8%AF%AD%E4%B9%89%E5%9B%BE.png)
+
+### 3.4 反卷积
+
+* 上采样(Upsample)
+
+在应用在计算机视觉的深度学习领域，由于输入图像通过卷积神经网络(CNN)提取特征后，输出的尺寸往往会变小，而有时我们需要将图像恢复到原来的尺寸以便进行进一步的计算(e.g.:图像的语义分割)，这个采用扩大图像尺寸，实现图像由小分辨率到大分辨率的映射的操作，叫做上采样(Upsample)。
+
+* 反卷积(Transposed Convolution)
+
+上采样有3种常见的方法：双线性插值(bilinear)，反卷积(Transposed Convolution)，反池化(Unpooling)，我们这里只讨论反卷积。这里指的反卷积，也叫转置卷积，它并不是正向卷积的完全逆过程，用一句话来解释：反卷积是一种特殊的正向卷积，先按照一定的比例通过补  来扩大输入图像的尺寸，接着旋转卷积核，再进行正向卷积。
+
+unsamplingd的操作可以看成是反卷积（Deconvolutional）,卷积运算的参数和CNN的参数一样是在训练FCN模型的过程中通过bp算法学习得到。
+
+普通的池化会缩小图片的尺寸，比如VGG16经过5次池化后图片被缩小了32倍。为了得到和原图等大小的分割图，我们需要上采样、反卷积。
+
+反卷积和卷积类似，都是相乘相加的运算。只不过后者是多对一，前者是一对多。而反卷积的前向和反向传播，只用颠倒卷积的前后向传播即可。如下图所示：
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/%E5%9B%BE%E5%83%8F%E5%8D%B7%E7%A7%AF.gif)  ![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/%E5%9B%BE%E5%83%8F%E5%8F%8D%E5%8D%B7%E7%A7%AF.gif)
+
+## 跳跃结构
+
+经过全卷积后的结果进行反卷积，基本上就能实现语义分割了，但是得到的结果通常是比较粗糙的。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/spectrum_of_deep_features.png)
+
+如上图所示，对原图像进行卷积conv1、pool1后原图像缩小为1/2；之后对图像进行第二次conv2、pool2后图像缩小为1/4；接着继续对图像进行第三次卷积操作conv3、pool3缩小为原图像的1/8，此时保留pool3的featureMap；接着继续对图像进行第四次卷积操作conv4、pool4，缩小为原图像的1/16，保留pool4的featureMap；最后对图像进行第五次卷积操作conv5、pool5，缩小为原图像的1/32，然后把原来CNN操作中的全连接变成卷积操作conv6、conv7，图像的featureMap数量改变但是图像大小依然为原图的1/32，此时图像不再叫featureMap而是叫heatMap。
+
+现在我们有1/32尺寸的heatMap，1/16尺寸的featureMap和1/8尺寸的featureMap，1/32尺寸的heatMap进行upsampling操作之后，因为这样的操作还原的图片仅仅是conv5中的卷积核中的特征，限于精度问题不能够很好地还原图像当中的特征。因此在这里向前迭代，把conv4中的卷积核对上一次upsampling之后的图进行反卷积补充细节（相当于一个插值过程），最后把conv3中的卷积核对刚才upsampling之后的图像进行再次反卷积补充细节，最后就完成了整个图像的还原。
+
+具体来说，就是将不同池化层的结果进行上采样，然后结合这些结果来优化输出，分为FCN-32s,FCN-16s,FCN-8s三种，第一行对应FCN-32s，第二行对应FCN-16s，第三行对应FCN-8s。 具体结构如下:
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/fcn.PNG)
+图中，image是原图像，conv1,conv2..,conv5为卷积操作，pool1,pool2,..pool5为pool操作（pool就是使得图片变为原图的1/2），注意con6-7是最后的卷积层，最右边一列是upsample后的end to end结果。必须说明的是图中nx是指对应的特征图上采样n倍（即变大n倍），并不是指有n个特征图，如32x upsampled 中的32x是图像只变大32倍，不是有32个上采样图像，又如2x conv7是指conv7的特征图变大2倍。
+
+
+
+
 # 参考文献
+https://github.com/datawhalechina/team-learning-cv/blob/master/AerialImageSegmentation/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95.md
 https://blog.csdn.net/weixin_40446557/article/details/85624579
+https://www.zhihu.com/question/48279880
