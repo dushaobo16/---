@@ -26,7 +26,19 @@ VGG-16：这款牛津型号以92.7%的准确率赢得了2013年的Imagenet竞争
 GoogLeNet：这GoogLeNet赢得了2014年Imagenet的竞争，准确率为93.3%。它由22层和一个新引入的称为初始模块的构建块组成。该模块由网络层网络、池操作、大卷积层和小卷积层组成。
 
 Resnet：这款微软的模型以96.4%的准确率赢得了2016年的Imagenet竞争。这是众所周知的，因为它的深度（152层）和残余块的引进。剩余的块通过引入标识跳过连接来解决培训真正深层架构的问题，以便层可以将其输入复制到下一层。
+![](https://img-blog.csdnimg.cn/20190102170326280.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MDQ0NjU1Nw==,size_16,color_FFFFFF,t_70)
 
+### 3.3FCN
+#### FCN原理及网络结构 
+
+Fully Conv简称FCN为全连接网络，将将一幅RGB图像输入到卷积神经网络后，经过多次卷积以及池化过程得到一系列的特征图，然后利用反卷积层对最后一个卷积层得到的特征图进行上采样，使得上采样后特征图与原图像的大小一样，从而实现对特征图上的每个像素值进行预测的同时保留其在原图像中的空间位置信息，最后对上采样特征图进行逐像素分类，逐个像素计算softmax分类损失。
+
+主要特点：
+** 不含全连接层（FC）的全卷积（Fully Conv）网络。从而可适应任意尺寸输入。
+** 引入增大数据尺寸的反卷积（Deconv）层。能够输出精细的结果。
+** 结合不同深度层结果的跳级（skip）结构。同时确保鲁棒性和精确性。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/fcn.jpg)
 
 # 参考文献
 https://blog.csdn.net/weixin_40446557/article/details/85624579
