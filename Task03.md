@@ -113,6 +113,75 @@ SegNet的思路和FCN十分相似，只是Encoder，Decoder（Unsampling）使�
 
 ### 3.6 Unet
 
+U-net对称语义分割模型，该网络模型主要由一个收缩路径和一个对称扩张路径组成，收缩路径用来获得上下文信息，对称扩张路径用来精确定位分割边界。U-net使用图像切块进行训练，所以训练数据量远远大于训练图像的数量，这使得网络在少量样本的情况下也能获得不变性和鲁棒性。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/unet.PNG)
+
+* Encoder：左半部分，由两个3x3的卷积层（RELU）+2x2的max pooling层（stride=2）反复组成，每经过一次下采样，通道数翻倍；
+* Decoder：右半部分，由一个2x2的上采样卷积层（RELU）+Concatenation（crop对应的Encoder层的输出feature map然后与Decoder层的上采样结果相加）+2个3x3的卷积层（RELU）反复构成；
+* 最后一层通过一个1x1卷积将通道数变成期望的类别数。
+
+### 3.7 DeepLab
+
+基于全卷积对称语义分割模型得到的分割结果比较粗糙，忽略了像素与像素之间的空间一致性关系。于是Google提出了一种新的扩张卷积语义分割模型，考虑了像素与像素之间的空间一致性关系，可以在不增加数量的情况下增加感受野。
+
+* Deeplabv1是由深度卷积网路和概率图模型级联而成的语义分割模型，由于深度卷积网路在重复最大池化和下采样的过程中会丢失很多的细节信息，所以采用扩张卷积算法增加感受野以获得更多上下文信息。考虑到深度卷积网路在图像标记任务中的空间不敏感性限制了它的定位精度，采用了完全连接条件随机场（Conditional Random Field， CRF）来提高模型捕获细节的能力。
+* Deeplabv2予以分割模型增加了ASPP（Atrous spatial pyramid pooling）结构，利用多个不同采样率的扩张卷积提取特征，再将特征融合以捕获不同大小的上下文信息。
+* Deeplabv3语义分割模型，在ASPP中加入了全局平均池化，同时在平行扩张卷积后添加批量归一化，有效地捕获了全局语义信息。
+* DeepLabV3+语义分割模型在Deeplabv3的基础上增加了编-解码模块和Xception主干网路，增加编解码模块主要是为了恢复原始的像素信息，使得分割的细节信息能够更好的保留，同时编码丰富的上下文信息。增加Xception主干网络是为了采用深度卷积进一步提高算法的精度和速度。在inception结构中，先对输入进行11卷积，之后将通道分组，分别使用不同的33卷积提取特征，最后将各组结果串联在一起作为输出。
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/DeepLab.png)
+
+主要特点：
+
+* 在多尺度上为分割对象进行带洞空间金字塔池化（ASPP）
+* 通过使用DCNNs（空洞卷积）提升了目标边界的定位
+* 降低了由DCNN的不变性导致的定位准确率
+
+### 3.8 RefineNet
+
+RefineNet采用了通过细化中间激活映射并分层地将其链接到结合多尺度激活，同时防止锐度损失。网络由独立的RefineNet模块组成，每个模块对应于ResNet。
+
+每个RefineNet模块由三个主要模块组成，即剩余卷积单元（RCU），多分辨率融合（MRF）和链剩余池（CRP）。RCU块由一个自适应块组成卷积集，微调预训练的ResNet权重对于分割问题。MRF层融合不同的激活物使用卷积上采样层来创建更高的分辨率地图。最后，在CRP层池中使用多种大小的内核用于从较大的图像区域捕获背景上下文。
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/RefineNet.png)
+
+主要特点：
+
+* 提出一种多路径refinement网络，称为RefineNet。这种网络可以使用各个层级的features，使得语义分割更为精准。
+* RefineNet中所有部分都利用resdiual connections (identity mappings)，使得梯度更容易短向或者长向前传，使端对端的训练变得更加容易和高效。
+* 提出了一种叫做chained residual pooling的模块，它可以从一个大的图像区域捕捉背景上下文信息。
+
+### 3.9 PSPNet
+
+深度卷积神经网络的每一层特征对语义分割都有影响，如何将高层特征的语义信息与底层识别的边界与轮廓信息结合起来是一个具有挑战性的问题。
+
+金字塔场景稀疏网络语义分割模型（Pyramid Scene Parsing Network，PSP）首先结合预训练网络 ResNet和扩张网络来提取图像的特征，得到原图像 1/8 大小的特征图，然后，采用金字塔池化模块将特征图同时通过四个并行的池化层得到四个不同大小的输出，将四个不同大小的输出分别进行上采样，还原到原特征图大小，最后与之前的特征图进行连接后经过卷积层得到最后的预测分割图像。
+
+* PSPNet为像素级场景解析提供了有效的全局上下文先验
+* 金字塔池化模块可以收集具有层级的信息，比全局池化更有代表性
+* 在计算量方面，我们的PSPNet并没有比原来的空洞卷积FCN网络有很大的增加
+* 在端到端学习中，全局金字塔池化模块和局部FCN特征可以被同时训练
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95/PSPNet.png)
+
+主要特点：
+
+* 金字塔场景解析网络是建立在FCN之上的基于像素级分类网络。将大小不同的内核集中在一起激活地图的不同区域创建空间池金字塔。
+* 特性映射来自网络被转换成不同分辨率的激活，并经过多尺度处理池层，稍后向上采样并与原始层连接进行分割的feature map。
+* 学习的过程利用辅助分类器进一步优化了像ResNet这样的深度网络。不同类型的池模块侧重于激活的不同区域地图。
+
+### 3.10 具体使用
+
+对于常见的语义分割模型，推荐可以直接使用segmentation_models_pytorch库完成：
+```
+import segmentation_models_pytorch as smp
+
+model = smp.Unet(
+    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+    in_channels=1,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+    classes=3,                      # model output channels (number of classes in your dataset)
+)
+```
 
 # 参考文献
 https://github.com/datawhalechina/team-learning-cv/blob/master/AerialImageSegmentation/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95.md
