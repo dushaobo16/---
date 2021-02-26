@@ -185,5 +185,7 @@ model = smp.Unet(
 
 # 参考文献
 https://github.com/datawhalechina/team-learning-cv/blob/master/AerialImageSegmentation/Task3%EF%BC%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84%E5%8F%91%E5%B1%95.md
+
 https://blog.csdn.net/weixin_40446557/article/details/85624579
+
 https://www.zhihu.com/question/48279880
