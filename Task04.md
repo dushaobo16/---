@@ -111,6 +111,7 @@ Dice系数（Dice coefficient）是常见的评价分割效果的方法之一，
 Dice系数定义如下：
 
 ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/dice.png?raw=true)
+
 $$
 \Dice (T, P) = \frac{2 |T \cap P|}{|T| \cup |P|} = \frac{2TP}{FP+2TP+FN}
 $$
@@ -121,12 +122,72 @@ $$
 
 $$ \frac{1}{F1} = \frac{1}{Precision} + \frac{1}{Recall} \ F1 = \frac{2TP}{FP+2TP+FN} $$
 
+### Dice Loss
 
+Dice Loss是在V-net模型中被提出应用的，是通过Dice系数转变而来，其实为了能够实现最小化的损失函数，以方便模型训练，以$1 - Dice$的形式作为损失函数：
 
+![](https://pic1.zhimg.com/80/v2-3e7e3fc41f0ddf24bcbff2ddfeb0684c_1440w.png)
 
+Laplace smoothing:
 
+Laplace smoothing 是一个可选改动，即将分子分母全部加 1：
+
+![](https://pic1.zhimg.com/80/v2-3511b4330023535ca029fdfa66d41dc4_1440w.jpg)
+
+带来的好处：
+
+（1）避免当|X|和|Y|都为0时，分子被0除的问题
+
+（2）减少过拟合
+
+## dice 系数计算
+
+预测的分割图的 dice 系数计算，首先将 |X⋂Y| 近似为预测图与 GT 分割图之间的点乘，并将点乘的元素结果相加：
+[1] - Pred 预测分割图与 GT 分割图的点乘：
+
+![](https://img-blog.csdnimg.cn/20190727173958436.jpg)
+
+[2] - 逐元素相乘的结果元素的相加和：
+
+![](https://img-blog.csdnimg.cn/20190727174007745.jpg)
+
+对于二分类问题，GT 分割图是只有 0, 1 两个值的，因此 |X⋂Y| 可以有效的将在 Pred 分割图中未在 GT 分割图中激活的所有像素清零. 对于激活的像素，主要是惩罚低置信度的预测，较高值会得到更好的 Dice 系数.
+
+关于 |X| 和 |Y| 的量化计算，可采用直接简单的元素相加；也有采用取元素平方求和的做法：
+
+![](https://img-blog.csdnimg.cn/20190727174018765.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pNVV9NYQ==,size_16,color_FFFFFF,t_70)
+
+$ 注 $：dice loss 比较适用于样本极度不均的情况，一般的情况下，使用 dice loss 会对反向传播造成不利的影响，容易使训练变得不稳定.
+## 代码实现
+
+```
+import numpy as np
+
+def dice(output, target):
+    '''计算Dice系数'''
+    smooth = 1e-6 # 避免0为除数
+    intersection = (output * target).sum()
+    return (2. * intersection + smooth) / (output.sum() + target.sum() + smooth)
+
+# 生成随机两个矩阵测试
+target = np.random.randint(0, 2, (3, 3))
+output = np.random.randint(0, 2, (3, 3))
+
+d = dice(output, target)
+# ----------------------------
+target = array([[1, 0, 0],
+       			[0, 1, 1],
+			    [0, 0, 1]])
+output = array([[1, 0, 1],
+       			[0, 1, 0],
+       			[0, 0, 0]])
+d = 0.5714286326530524
+
+```
 
 
 # 参考文献
 
 https://cloud.tencent.com/developer/article/1490456
+https://zhuanlan.zhihu.com/p/86704421
+https://blog.csdn.net/h1239757443/article/details/108457082
