@@ -223,6 +223,142 @@ d = 0.4
 
 ```
 
+## 4.4 BCE损失函数
+
+BCE损失函数（Binary Cross-Entropy Loss）是交叉熵损失函数（Cross-Entropy Loss）的一种特例，BCE Loss只应用在二分类任务中。
+
+![](https://pic3.zhimg.com/80/v2-4cea328253a1d17f8a53a8eb0513ba92_1440w.png)
+
+pytorch还提供了已经结合了Sigmoid函数的BCE损失：torch.nn.BCEWithLogitsLoss()，相当于免去了实现进行Sigmoid激活的操作。
+
+```
+import torch
+import torch.nn as nn
+
+bce = nn.BCELoss()
+bce_sig = nn.BCEWithLogitsLoss()
+
+input = torch.randn(5, 1, requires_grad=True)
+target = torch.empty(5, 1).random_(2)
+pre = nn.Sigmoid()(input)
+
+loss_bce = bce(pre, target)
+loss_bce_sig = bce_sig(input, target)
+
+# ------------------------
+input = tensor([[-0.2296],
+        		[-0.6389],
+        		[-0.2405],
+        		[ 1.3451],
+        		[ 0.7580]], requires_grad=True)
+output = tensor([[1.],
+        		 [0.],
+        		 [0.],
+        		 [1.],
+        		 [1.]])
+pre = tensor([[0.4428],
+        	  [0.3455],
+        	  [0.4402],
+        	  [0.7933],
+        	  [0.6809]], grad_fn=<SigmoidBackward>)
+
+print(loss_bce)
+tensor(0.4869, grad_fn=<BinaryCrossEntropyBackward>)
+
+print(loss_bce_sig)
+tensor(0.4869, grad_fn=<BinaryCrossEntropyWithLogitsBackward>)
+
+
+```
+
+### 4.5 Focal Loss
+
+Focal loss最初是出现在目标检测领域，主要是为了解决正负样本比例失调的问题。那么对于分割任务来说，如果存在数据不均衡的情况，也可以借用focal loss来进行缓解。
+Focal loss是在交叉熵损失函数基础上进行的修改，首先回顾二分类交叉上损失：
+![](https://images2018.cnblogs.com/blog/1055519/201808/1055519-20180818162755861-24998254.png)
+
+![](https://images2018.cnblogs.com/blog/1055519/201808/1055519-20180818162835223-1945881125.png)是经过激活函数的输出，所以在0-1之间。可见普通的交叉熵对于正样本而言，输出概率越大损失越小。对于负样本而言，输出概率越小则损失越小。此时的损失函数在大量简单样本的迭代过程中比较缓慢且可能无法优化至最优。那么Focal loss是怎么改进的呢？
+
+![](https://images2018.cnblogs.com/blog/1055519/201808/1055519-20180818174822290-765890427.png)
+
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/FocalLoss.png)
+
+简单来说：$α$解决样本不平衡问题，$γ$解决样本难易问题。
+
+也就是说，当数据不均衡时，可以根据比例设置合适的$α$，这个很好理解，为了能够使得正负样本得到的损失能够均衡，因此对loss前面加上一定的权重，其中负样本数量多，因此占用的权重可以设置的小一点；正样本数量少，就对正样本产生的损失的权重设的高一点。
+
+那γ具体怎么起作用呢？以图中$γ=5$曲线为例，假设$gt$类别为1，当模型预测结果为1的概率$p_t$比较大时，我们认为模型预测的比较准确，也就是说这个样本比较简单。而对于比较简单的样本，我们希望提供的loss小一些而让模型主要学习难一些的样本，也就是$p_t→ 1$则loss接近于0，既不用再特别学习；当分类错误时，$p_t → 0$则loss正常产生，继续学习。对比图中蓝色和绿色曲线，可以看到，γ值越大，当模型预测结果比较准确的时候能提供更小的loss，符合我们为简单样本降低loss的预期。
+
+## 代码实现
+```
+import torch.nn as nn
+import torch
+import torch.nn.functional as F
+
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=1, gamma=2, logits=False, reduce=True):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.logits = logits	# 如果BEC带logits则损失函数在计算BECloss之前会自动计算softmax/sigmoid将其映射到[0,1]
+        self.reduce = reduce
+
+    def forward(self, inputs, targets):
+        if self.logits:
+            BCE_loss = F.binary_cross_entropy_with_logits(inputs, targets, reduce=False)
+        else:
+            BCE_loss = F.binary_cross_entropy(inputs, targets, reduce=False)
+        pt = torch.exp(-BCE_loss)
+        F_loss = self.alpha * (1-pt)**self.gamma * BCE_loss
+
+        if self.reduce:
+            return torch.mean(F_loss)
+        else:
+            return F_loss
+
+# ------------------------
+
+FL1 = FocalLoss(logits=False)
+FL2 = FocalLoss(logits=True)
+
+inputs = torch.randn(5, 1, requires_grad=True)
+targets = torch.empty(5, 1).random_(2)
+pre = nn.Sigmoid()(inputs)
+
+f_loss_1 = FL1(pre, targets)
+f_loss_2 = FL2(inputs, targets)
+
+# ------------------------
+
+print('inputs:', inputs)
+inputs: tensor([[-1.3521],
+        [ 0.4975],
+        [-1.0178],
+        [-0.3859],
+        [-0.2923]], requires_grad=True)
+    
+print('targets:', targets)
+targets: tensor([[1.],
+        [1.],
+        [0.],
+        [1.],
+        [1.]])
+    
+print('pre:', pre)
+pre: tensor([[0.2055],
+        [0.6219],
+        [0.2655],
+        [0.4047],
+        [0.4274]], grad_fn=<SigmoidBackward>)
+    
+print('f_loss_1:', f_loss_1)
+f_loss_1: tensor(0.3375, grad_fn=<MeanBackward0>)
+    
+print('f_loss_2', f_loss_2)
+f_loss_2 tensor(0.3375, grad_fn=<MeanBackward0>)
+
+```
+
 
 
 # 参考文献
@@ -232,3 +368,4 @@ https://zhuanlan.zhihu.com/p/86704421
 https://blog.csdn.net/h1239757443/article/details/108457082
 https://blog.csdn.net/JMU_Ma/article/details/97533768
 https://blog.csdn.net/u014061630/article/details/82818112
+https://zhuanlan.zhihu.com/p/138592268
