@@ -18,7 +18,7 @@
 
 以猫狗二分类为例，假定cat为正例-Positive，dog为负例-Negative；预测正确为True，反之为False。我们就可以得到下面这样一个表示FP、FN、TP、TN的表：
 
-![](https://ask.qcloudimg.com/http-save/yehe-1651294/raeyvqul5r.png?imageView2/2/w/1620)
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/1.png?raw=true)
 
 ```
 import seaborn as sns
@@ -40,7 +40,7 @@ ax2.set_ylabel('True')
 f.savefig('sns_heatmap_confusion_matrix.jpg', bbox_inches='tight')
 ```
 
-![](https://ask.qcloudimg.com/http-save/yehe-1651294/akj3vh1wn1.jpeg?imageView2/2/w/1620)
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/2.jpeg?raw=true)
 
 这个时候我们还是不知道skearn.metrics.confusion_matrix做了些什么，这个时候print(C2)，打印看下C2究竟里面包含着什么。最终的打印结果如下所示：
 ```
@@ -59,7 +59,8 @@ f.savefig('sns_heatmap_confusion_matrix.jpg', bbox_inches='tight')
 * FN=0：预测为negative狗中0个被预测错误了
 * TP=4：预测为positive猫中4个被预测正确了
 
-![](https://ask.qcloudimg.com/http-save/yehe-1651294/cfix7alidi.png?imageView2/2/w/1620)
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/3.png?raw=true)
+
 
 
 
