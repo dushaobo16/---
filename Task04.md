@@ -184,6 +184,45 @@ output = array([[1, 0, 1],
 d = 0.5714286326530524
 
 ```
+## 4.3 IoU评价指标
+
+IoU 的全称为交并比（Intersection over Union），通过这个名称我们大概可以猜到 IoU 的计算方法。IoU 计算的是 “预测的边框” 和 “真实的边框” 的交集和并集的比值。
+![](https://img-blog.csdn.net/20180922220708895?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTQwNjE2MzA=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+![](https://www.zhihu.com/equation?tex=IoU+%3D+%5Cfrac%7B%5Cleft%7C+A%5Ccap+B+%5Cright%7C%7D%7B%5Cleft%7C+A%5Ccup+B+%5Cright%7C%7D)
+
+
+target      |     prediction
+------------|----------------
+![](https://github.com/datawhalechina/team-learning-cv/blob/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/target.png)   | ![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/prediction.png)
+Intersection($T\cap P$)   |  union($T\cup P$)
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/intersection.png)  | ![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/union.png)
+
+### 代码实现 
+
+```
+def iou_score(output, target):
+    '''计算IoU指标'''
+	  intersection = np.logical_and(target, output) 
+    union = np.logical_or(target, output) 
+    return np.sum(intersection) / np.sum(union)
+
+# 生成随机两个矩阵测试
+target = np.random.randint(0, 2, (3, 3))
+output = np.random.randint(0, 2, (3, 3))
+
+d = iou_score(output, target)
+# ----------------------------
+target = array([[1, 0, 0],
+       			[0, 1, 1],
+			    [0, 0, 1]])
+output = array([[1, 0, 1],
+       			[0, 1, 0],
+       			[0, 0, 0]])
+d = 0.4
+
+```
+
 
 
 # 参考文献
@@ -191,3 +230,5 @@ d = 0.5714286326530524
 https://cloud.tencent.com/developer/article/1490456
 https://zhuanlan.zhihu.com/p/86704421
 https://blog.csdn.net/h1239757443/article/details/108457082
+https://blog.csdn.net/JMU_Ma/article/details/97533768
+https://blog.csdn.net/u014061630/article/details/82818112
