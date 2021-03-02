@@ -117,7 +117,15 @@ $$
 
 其中，$T$表示真实前景（target）,$P$表示预测前景（Prediction）。Dice系数取值范围为$[0,1]$,其中值 为1时代表预测与真实完全一致。仔细观察，Dice系数 与分类评价指标中的F1 Score很相似：
 
+![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/f1_score.png?raw=true)
+
 $$ \frac{1}{F1} = \frac{1}{Precision} + \frac{1}{Recall} \ F1 = \frac{2TP}{FP+2TP+FN} $$
+
+
+
+
+
+
 
 # 参考文献
 
