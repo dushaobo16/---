@@ -110,7 +110,9 @@ y_true = ["dog", "dog", "dog", "cat", "cat", "cat", "cat"]
 Dice系数（Dice coefficient）是常见的评价分割效果的方法之一，同样也可以改写成损失函数用来度量prediction和target之间的距离。
 Dice系数定义如下：
 ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/dice.png?raw=true)
-$$Dice (T, P) = \frac{2 |T \cap P|}{|T| \cup |P|} = \frac{2TP}{FP+2TP+FN}$$
+$$
+\Dice (T, P) = \frac{2 |T \cap P|}{|T| \cup |P|} = \frac{2TP}{FP+2TP+FN}
+$$
 
 其中，$T$表示真实前景（target）,$P$表示预测前景（Prediction）。Dice系数取值范围为$[0,1]$,其中值 为1时代表预测与真实完全一致。仔细观察，Dice系数 与分类评价指标中的F1 Score很相似：
 
