@@ -358,6 +358,155 @@ print('f_loss_2', f_loss_2)
 f_loss_2 tensor(0.3375, grad_fn=<MeanBackward0>)
 
 ```
+## 4.6 Lovász-Softmax
+
+论文提出了LovaszSoftmax，是一种基于IOU的loss，效果优于cross_entropy，可以在分割任务中使用。最终在Pascal VOC和 Cityscapes 两个数据集上取得了最好的结果。
+cross_entropy loss:
+
+![](https://img-blog.csdnimg.cn/20190118113533803.png)
+
+Softmax 函数：
+
+![](https://img-blog.csdnimg.cn/20190118113547280.png)
+
+Jaccard index 
+
+![](https://img-blog.csdnimg.cn/2019011811361294.png)
+
+优化的IOU loss:
+
+![](https://img-blog.csdnimg.cn/20190118113625479.png)
+
+论文贡献：
+
+* 结合Lovasz hinge 和Jaccard loss 解决2值图片的分割问题
+* 提出了Lovasz-Softmax loss 对多个类别分割的参数设置
+* 设计了一个基于batch的IOU作为基于dataset IOU的高效代理
+* 分析和对比各种IOU测量方法
+* 基于本文的loss,对经典的分割方法的分割效果做出很大的提升
+
+定义1：
+
+![](https://img-blog.csdnimg.cn/20190118113655600.png)
+
+定义2：
+
+![](https://img-blog.csdnimg.cn/20190118113710527.png)
+
+Lovász-Softmax实现链接：https://github.com/bermanmaxim/LovaszSoftmax
+
+```
+import torch
+from torch.autograd import Variable
+import torch.nn.functional as F
+import numpy as np
+try:
+    from itertools import  ifilterfalse
+except ImportError: # py3k
+    from itertools import  filterfalse as ifilterfalse
+    
+# --------------------------- MULTICLASS LOSSES ---------------------------
+def lovasz_softmax(probas, labels, classes='present', per_image=False, ignore=None):
+    """
+    Multi-class Lovasz-Softmax loss
+      probas: [B, C, H, W] Variable, class probabilities at each prediction (between 0 and 1).
+              Interpreted as binary (sigmoid) output with outputs of size [B, H, W].
+      labels: [B, H, W] Tensor, ground truth labels (between 0 and C - 1)
+      classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
+      per_image: compute the loss per image instead of per batch
+      ignore: void class labels
+    """
+    if per_image:
+        loss = mean(lovasz_softmax_flat(*flatten_probas(prob.unsqueeze(0), lab.unsqueeze(0), ignore), classes=classes)
+                          for prob, lab in zip(probas, labels))
+    else:
+        loss = lovasz_softmax_flat(*flatten_probas(probas, labels, ignore), classes=classes)
+    return loss
+
+
+def lovasz_softmax_flat(probas, labels, classes='present'):
+    """
+    Multi-class Lovasz-Softmax loss
+      probas: [P, C] Variable, class probabilities at each prediction (between 0 and 1)
+      labels: [P] Tensor, ground truth labels (between 0 and C - 1)
+      classes: 'all' for all, 'present' for classes present in labels, or a list of classes to average.
+    """
+    if probas.numel() == 0:
+        # only void pixels, the gradients should be 0
+        return probas * 0.
+    C = probas.size(1)
+    losses = []
+    class_to_sum = list(range(C)) if classes in ['all', 'present'] else classes
+    for c in class_to_sum:
+        fg = (labels == c).float() # foreground for class c
+        if (classes is 'present' and fg.sum() == 0):
+            continue
+        if C == 1:
+            if len(classes) > 1:
+                raise ValueError('Sigmoid output possible only with 1 class')
+            class_pred = probas[:, 0]
+        else:
+            class_pred = probas[:, c]
+        errors = (Variable(fg) - class_pred).abs()
+        errors_sorted, perm = torch.sort(errors, 0, descending=True)
+        perm = perm.data
+        fg_sorted = fg[perm]
+        losses.append(torch.dot(errors_sorted, Variable(lovasz_grad(fg_sorted))))
+    return mean(losses)
+
+
+def flatten_probas(probas, labels, ignore=None):
+    """
+    Flattens predictions in the batch
+    """
+    if probas.dim() == 3:
+        # assumes output of a sigmoid layer
+        B, H, W = probas.size()
+        probas = probas.view(B, 1, H, W)
+    B, C, H, W = probas.size()
+    probas = probas.permute(0, 2, 3, 1).contiguous().view(-1, C)  # B * H * W, C = P, C
+    labels = labels.view(-1)
+    if ignore is None:
+        return probas, labels
+    valid = (labels != ignore)
+    vprobas = probas[valid.nonzero().squeeze()]
+    vlabels = labels[valid]
+    return vprobas, vlabels
+
+
+def xloss(logits, labels, ignore=None):
+    """
+    Cross entropy loss
+    """
+    return F.cross_entropy(logits, Variable(labels), ignore_index=255)
+
+# --------------------------- HELPER FUNCTIONS ---------------------------
+def isnan(x):
+    return x != x
+    
+def mean(l, ignore_nan=False, empty=0):
+    """
+    nanmean compatible with generators.
+    """
+    l = iter(l)
+    if ignore_nan:
+        l = ifilterfalse(isnan, l)
+    try:
+        n = 1
+        acc = next(l)
+    except StopIteration:
+        if empty == 'raise':
+            raise ValueError('Empty mean')
+        return empty
+    for n, v in enumerate(l, 2):
+        acc += v
+    if n == 1:
+        return acc
+    return acc / n
+
+```
+
+
 
 
 
@@ -369,3 +518,4 @@ https://blog.csdn.net/h1239757443/article/details/108457082
 https://blog.csdn.net/JMU_Ma/article/details/97533768
 https://blog.csdn.net/u014061630/article/details/82818112
 https://zhuanlan.zhihu.com/p/138592268
+https://www.cnblogs.com/king-lps/p/9497836.html
