@@ -17,7 +17,7 @@
 此时，就引入FP、FN、TP、TN与精确率(Precision)，召回率(Recall)，准确率(Accuracy)。
 
 以猫狗二分类为例，假定cat为正例-Positive，dog为负例-Negative；预测正确为True，反之为False。我们就可以得到下面这样一个表示FP、FN、TP、TN的表：
-
+![](https://github.com/datawhalechina/team-learning-cv/raw/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/%E6%B7%B7%E6%B7%86%E7%9F%A9%E9%98%B5.png)
 ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/1.png?raw=true)
 
 ```
@@ -61,6 +61,38 @@ f.savefig('sns_heatmap_confusion_matrix.jpg', bbox_inches='tight')
 
 ![](https://github.com/dushaobo16/city-map-segment/blob/main/image/Task04_img/3.png?raw=true)
 
+这时候再把上面猫狗预测结果拿来看看，6个被预测为cat，但是只有4个的true是cat，此时就和右侧的红圈对应上了。
+
+```
+y_pred = ["cat", "cat", "dog", "cat", "cat", "cat", "cat"]
+
+y_true = ["dog", "dog", "dog", "cat", "cat", "cat", "cat"]
+```
+
+## 精确率(Precision)、召回率(Recall)、准确率(Accuracy)
+> 有了上面的这些数值，就可以进行如下的计算工作了
+
+准确率(Accuracy)：这三个指标里最直观的就是准确率: 模型判断正确的数据(TP+TN)占总数据的比例
+```
+"Accuracy: "+str(round((tp+tn)/(tp+fp+fn+tn), ))
+```
+
+> 召回率(Recall)：针对数据集中的所有正例(TP+FN)而言,模型正确判断出的正例(TP)占数据集中所有正例的比例.FN表示被模型误认为是负例但实际是正例的数据.召回率也叫查全率,以物体检测为例,我们往往把图片中的物体作为正例,此时召回率高代表着模型可以找出图片中更多的物体!
+
+```
+"Recall: "+str(round((tp)/(tp+fn), ))
+```
+
+> 精确率(Precision)：针对模型判断出的所有正例(TP+FP)而言,其中真正例(TP)占的比例.精确率也叫查准率,还是以物体检测为例,精确率高表示模型检测出的物体中大部分确实是物体,只有少量不是物体的对象被当成物体
+> 
+```
+"Precision: "+str(round((tp)/(tp+fp), ))
+```
+
+在语义分割任务中来，我们可以将语义分割看作是对每一个图像像素的的分类问题。根据混淆矩阵中的定义，我们亦可以将特定像素所属的集合或区域划分成TP、TN、 FP、FN四类。
+![](https://github.com/datawhalechina/team-learning-cv/blob/master/AerialImageSegmentation/img/Task4%EF%BC%9A%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0%E4%B8%8E%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0_image/%E5%88%86%E5%89%B2%E5%AF%B9%E7%85%A7.png)
+
+以上面的图片为例，图中左子图中的人物区域（黄色像素集合）是我们真实标注的#前景信息（target）#，其他区域（紫色像素集合）为背景信息。当经过预测之后，我们会得到的一张预测结果，图中右子图中的黄色像素为预测的前景（prediction），紫色像素为预测的背景区域。此时，我们便能够将预测结果分成4个部分：
 
 
 
