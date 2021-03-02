@@ -157,7 +157,7 @@ Laplace smoothing 是一个可选改动，即将分子分母全部加 1：
 
 ![](https://img-blog.csdnimg.cn/20190727174018765.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pNVV9NYQ==,size_16,color_FFFFFF,t_70)
 
-$ 注 $：dice loss 比较适用于样本极度不均的情况，一般的情况下，使用 dice loss 会对反向传播造成不利的影响，容易使训练变得不稳定.
+**注**：dice loss 比较适用于样本极度不均的情况，一般的情况下，使用 dice loss 会对反向传播造成不利的影响，容易使训练变得不稳定.
 ## 代码实现
 
 ```
